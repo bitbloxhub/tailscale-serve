@@ -1,0 +1,4 @@
+#!/bin/bash
+export RAKDOS_SHELL=/bin/bash
+echo $RAKDOS_SHELL
+rakdos /etc/service/tailscaled/rakdos.toml

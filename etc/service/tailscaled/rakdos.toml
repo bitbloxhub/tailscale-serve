@@ -1,0 +1,22 @@
+daemon_process = "tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055 --state=mem: --statedir /state"
+setup_steps = [
+	{ run = "tailscale up --authkey=${TS_AUTHKEY} --hostname=${TS_HOSTNAME}" },
+	{ run = "socat TCP4-LISTEN:100,fork,reuseaddr TCP4:${TS_SERVE_ORIGIN}", daemon = true },
+	{ run = """
+if [[ ( "${TS_SERVE_PROTOCOL}" == "http" ) || ( "${TS_SERVE_PROTOCOL}" == "https" ) ]]; then \
+	tailscale serve --bg --${TS_SERVE_PROTOCOL}=${TS_SERVE_PORT} http://127.0.0.1:100
+elif [[ ( "${TS_SERVE_PROTOCOL}" == "tcp" ) || ( "${TS_SERVE_PROTOCOL}" == "tls-terminated-tcp" ) ]]; then
+	tailscale serve --bg ${TS_SERVE_PROTOCOL}:${TS_SERVE_PORT} tcp://127.0.0.1:100
+fi"""},
+	{ run = """
+if [[ -n "${TS_FUNNEL_PORT}" ]]; then
+	if [[ ( "${TS_SERVE_PROTOCOL}" == "http" ) || ( "${TS_SERVE_PROTOCOL}" == "https" ) ]]; then \
+		tailscale funnel --bg --${TS_SERVE_PROTOCOL}=${TS_SERVE_PORT} http://127.0.0.1:100
+	elif [[ ( "${TS_SERVE_PROTOCOL}" == "tcp" ) || ( "${TS_SERVE_PROTOCOL}" == "tls-terminated-tcp" ) ]]; then
+		tailscale funnel --bg ${TS_SERVE_PROTOCOL}:${TS_SERVE_PORT} tcp://127.0.0.1:100
+	fi
+fi"""}
+]
+takedown_steps = [
+	"echo takedown"
+]
