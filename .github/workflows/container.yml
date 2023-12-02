@@ -13,18 +13,11 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
-      matrix:
-        install_latest: [ true, false ]
 
     steps:
       # Checkout push-to-registry action github repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v2
-
-      - name: Install latest podman
-        if: matrix.install_latest
-        run: |
-          bash .github/install_latest_podman.sh
 
       # Build image using Buildah action
       - name: Build Image
@@ -38,8 +31,8 @@ jobs:
 
       # Push the image to GHCR (Image Registry)
       - name: Push To GHCR
-        uses: ./
         id: push
+        uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build_image.outputs.image }}
           tags: ${{ steps.build_image.outputs.tags }}
