@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       # Checkout push-to-registry action github repository
